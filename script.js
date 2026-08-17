@@ -17,24 +17,17 @@ document.getElementById('convertBtn').addEventListener('click', function() {
 
   const urlRegex = /(https?:\/\/[^\s]+)/g;
   let convertedLines = [];
-  let invalidUrls = [];
 
   lines.forEach(line => {
     const urls = line.match(urlRegex);
     if (urls) {
       let convertedLine = line;
       urls.forEach(url => {
-        // 新增 shp.ee 判斷，涵蓋所有蝦皮網域
+        // 核心判斷：只要網址屬於這三個蝦皮域名之一，就強制轉換
         const isShopee = url.includes('shopee') || url.includes('shope.ee') || url.includes('shp.ee');
         
-        // 判斷最低長度門檻：shp.ee 至少 24 字元，s.shopee.tw 至少 28 字元
-        const minLength = url.includes('shp.ee') ? 24 : 28;
-
-        if (isShopee && url.length < minLength) {
-          invalidUrls.push(url);
-        }
-
         if (isShopee) {
+          // 強制處理：不管網址長短，直接加上 sub_id
           const connector = url.includes('?') ? '&' : '?';
           const newUrl = `${url}${connector}sub_id=${MY_SUB_ID}`;
           convertedLine = convertedLine.replace(url, newUrl);
@@ -46,11 +39,6 @@ document.getElementById('convertBtn').addEventListener('click', function() {
     }
   });
 
-  if (invalidUrls.length > 0) {
-    alert(`⚠️ 偵測到網址不完整或缺字：\n${invalidUrls.join('\n')}\n\n請確認連結複製完整再試一次！`);
-    return;
-  }
-
   document.getElementById('inputText').value = lines.join('\n');
 
   const outputList = document.getElementById('outputList');
@@ -61,6 +49,7 @@ document.getElementById('convertBtn').addEventListener('click', function() {
     const p = document.createElement('p');
     p.className = 'link-item';
     
+    // 這裡渲染時也要把網址包起來
     const match = line.match(urlRegex);
     if (match) {
       let htmlContent = line;
