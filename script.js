@@ -1,6 +1,5 @@
 const MY_SUB_ID = "judy7898376"; 
 
-// 產生推廣連結功能
 document.getElementById('convertBtn').addEventListener('click', function() {
   const input = document.getElementById('inputText').value.trim();
   if (!input) {
@@ -8,30 +7,34 @@ document.getElementById('convertBtn').addEventListener('click', function() {
     return;
   }
 
-  // 以換行切割連結並過濾空行
   let lines = input.split('\n').filter(line => line.trim() !== '');
 
-  // 若超過 5 行，跳出提示並強制只保留前 5 行
   if (lines.length > 5) {
     alert('一次最多只能處理 5 個連結！已自動為您保留前 5 行。');
-    lines = lines.slice(0, 5); // 嚴格只留前 5 行
+    lines = lines.slice(0, 5);
   }
 
   const urlRegex = /(https?:\/\/[^\s]+)/g;
   let convertedLines = [];
+  let hasInvalidUrl = false;
 
-  // 只針對過濾後的這 5 行進行轉換
   lines.forEach(line => {
     const urls = line.match(urlRegex);
     if (urls) {
       let convertedLine = line;
       urls.forEach(url => {
-        let newUrl = url;
-        if (newUrl.includes('shopee') || newUrl.includes('shope.ee')) {
-          const connector = newUrl.includes('?') ? '&' : '?';
-          newUrl = `${newUrl}${connector}sub_id=${MY_SUB_ID}`;
+        // 檢查是否為蝦皮網址，且長度是否過短（一般蝦皮短連結最少會超過 20 個字元）
+        const isShopee = url.includes('shopee') || url.includes('shope.ee');
+        
+        if (isShopee && url.length < 20) {
+          hasInvalidUrl = true; // 標記發現疑似殘缺的網址
         }
-        convertedLine = convertedLine.replace(url, newUrl);
+
+        if (isShopee) {
+          const connector = url.includes('?') ? '&' : '?';
+          const newUrl = `${url}${connector}sub_id=${MY_SUB_ID}`;
+          convertedLine = convertedLine.replace(url, newUrl);
+        }
       });
       convertedLines.push(convertedLine);
     } else {
@@ -39,10 +42,11 @@ document.getElementById('convertBtn').addEventListener('click', function() {
     }
   });
 
-  // 更新輸入框內容為前 5 行，讓使用者直觀看到後面的被裁掉了
+  if (hasInvalidUrl) {
+    alert('⚠️ 偵測到部分網址可能過短或不完整，請再次確認連結是否複製完整喔！');
+  }
+
   document.getElementById('inputText').value = lines.join('\n');
-  
-  // 輸出轉換結果
   document.getElementById('outputText').value = convertedLines.join('\n');
   document.getElementById('resultArea').classList.remove('hidden');
 });
