@@ -24,12 +24,11 @@ document.getElementById('convertBtn').addEventListener('click', function() {
     if (urls) {
       let convertedLine = line;
       urls.forEach(url => {
-        const isShopee = url.includes('shopee') || url.includes('shope.ee');
+        // 新增 shp.ee 判斷，涵蓋所有蝦皮網域
+        const isShopee = url.includes('shopee') || url.includes('shope.ee') || url.includes('shp.ee');
         
-        // 自動判斷網址域名來設定最低長度門檻
-        // tw.shp.ee 約 26 字元 -> 設 24
-        // s.shopee.tw 約 29 字元 -> 設 28
-        const minLength = url.includes('tw.shp.ee') ? 24 : 28;
+        // 判斷最低長度門檻：shp.ee 至少 24 字元，s.shopee.tw 至少 28 字元
+        const minLength = url.includes('shp.ee') ? 24 : 28;
 
         if (isShopee && url.length < minLength) {
           invalidUrls.push(url);
