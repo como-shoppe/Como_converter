@@ -17,27 +17,30 @@ document.getElementById('convertBtn').addEventListener('click', function() {
 
   const urlRegex = /(https?:\/\/[^\s]+)/g;
   let convertedLines = [];
+  let nonUrlLines = [];
 
   lines.forEach(line => {
     const urls = line.match(urlRegex);
-    if (urls) {
+    if (!urls) {
+      nonUrlLines.push(line);
+    } else {
       let convertedLine = line;
       urls.forEach(url => {
-        // 核心判斷：只要網址屬於這三個蝦皮域名之一，就強制轉換
         const isShopee = url.includes('shopee') || url.includes('shope.ee') || url.includes('shp.ee');
-        
         if (isShopee) {
-          // 強制處理：不管網址長短，直接加上 sub_id
           const connector = url.includes('?') ? '&' : '?';
           const newUrl = `${url}${connector}sub_id=${MY_SUB_ID}`;
           convertedLine = convertedLine.replace(url, newUrl);
         }
       });
       convertedLines.push(convertedLine);
-    } else {
-      convertedLines.push(line);
     }
   });
+
+  if (nonUrlLines.length > 0) {
+    alert(`⚠️ 請確認輸入的內容是否皆為有效連結！\n以下非有效網址：\n${nonUrlLines.join('\n')}`);
+    return;
+  }
 
   document.getElementById('inputText').value = lines.join('\n');
 
@@ -49,7 +52,6 @@ document.getElementById('convertBtn').addEventListener('click', function() {
     const p = document.createElement('p');
     p.className = 'link-item';
     
-    // 這裡渲染時也要把網址包起來
     const match = line.match(urlRegex);
     if (match) {
       let htmlContent = line;
@@ -57,8 +59,6 @@ document.getElementById('convertBtn').addEventListener('click', function() {
         htmlContent = htmlContent.replace(link, `<a href="${link}" target="_blank">${link}</a>`);
       });
       p.innerHTML = `${index + 1}. ${htmlContent}`;
-    } else {
-      p.innerText = `${index + 1}. ${line}`;
     }
     
     outputList.appendChild(p);
@@ -75,7 +75,7 @@ document.getElementById('convertBtn').addEventListener('click', function() {
 document.getElementById('clearBtn').addEventListener('click', function() {
   document.getElementById('inputText').value = '';
   const outputList = document.getElementById('outputList');
-  if (outputList) outputList.innerHTML = '';
+  if (!outputList) outputList.innerHTML = '';
   convertedRawText = "";
   
   const resultArea = document.getElementById('resultArea');
