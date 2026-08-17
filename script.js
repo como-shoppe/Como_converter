@@ -10,10 +10,22 @@ document.getElementById('convertBtn').addEventListener('click', function() {
 
   lines.forEach(line => {
     const str = line.trim();
-    // 超精簡防呆：必須是 http/https、包含 shopee/shp.ee，且斜線後代碼或總長度至少要有 8 碼/25字
     const isUrl = /^https?:\/\/[^\s]+$/i.test(str);
     const isShopee = /shopee|shope\.ee|shp\.ee/i.test(str);
-    const isValid = /tw\.shp\.ee/i.test(str) ? /^https?:\/\/tw\.shp\.ee\/[a-zA-Z0-9]{8,}/i.test(str) : str.length >= 25;
+
+    let isValid = false;
+
+    // 嚴格比對：整串字串開頭至結尾必須完全精確符合碼數
+    if (/tw\.shp\.ee/i.test(str)) {
+      // 1. tw.shp.ee/ 斜線後必須「剛好 8 碼」，後面可帶 ? 參數，但絕不能少於 8 碼
+      isValid = /^https?:\/\/tw\.shp\.ee\/[a-zA-Z0-9]{8}(\?.*)?$/i.test(str);
+    } else if (/s\.shopee\.tw/i.test(str)) {
+      // 2. s.shopee.tw/ 斜線後必須「剛好 10 碼」
+      isValid = /^https?:\/\/s\.shopee\.tw\/[a-zA-Z0-9]{10}(\?.*)?$/i.test(str);
+    } else {
+      // 3. 一般商品長網址（至少 28 字）
+      isValid = str.length >= 28;
+    }
 
     if (isUrl && isShopee && isValid) {
       const connector = str.includes('?') ? '&' : '?';
@@ -24,7 +36,7 @@ document.getElementById('convertBtn').addEventListener('click', function() {
   });
 
   if (invalidLines.length > 0) {
-    return alert(`⚠️ 偵測到無效或缺字連結：\n${invalidLines.join('\n')}`);
+    return alert(`⚠️ 偵測到無效或缺字連結！\n以下連結複製不完整：\n\n${invalidLines.join('\n')}`);
   }
 
   document.getElementById('inputText').value = lines.join('\n');
