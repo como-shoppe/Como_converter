@@ -15,15 +15,13 @@ document.getElementById('convertBtn').addEventListener('click', function() {
 
     let isValid = false;
 
-    // 嚴格比對：整串字串開頭至結尾必須完全精確符合碼數
     if (/tw\.shp\.ee/i.test(str)) {
-      // 1. tw.shp.ee/ 斜線後必須「剛好 8 碼」，後面可帶 ? 參數，但絕不能少於 8 碼
-      isValid = /^https?:\/\/tw\.shp\.ee\/[a-zA-Z0-9]{8}(\?.*)?$/i.test(str);
+      // 強制 tw.shp.ee 斜線後必須滿 8 碼以上，少於 8 碼（包含 7 碼）一律判定缺字！
+      isValid = /^https?:\/\/tw\.shp\.ee\/[a-zA-Z0-9]{8,}(\?.*)?$/i.test(str);
     } else if (/s\.shopee\.tw/i.test(str)) {
-      // 2. s.shopee.tw/ 斜線後必須「剛好 10 碼」
-      isValid = /^https?:\/\/s\.shopee\.tw\/[a-zA-Z0-9]{10}(\?.*)?$/i.test(str);
+      // 強制 s.shopee.tw 斜線後必須滿 10 碼以上
+      isValid = /^https?:\/\/s\.shopee\.tw\/[a-zA-Z0-9]{10,}(\?.*)?$/i.test(str);
     } else {
-      // 3. 一般商品長網址（至少 28 字）
       isValid = str.length >= 28;
     }
 
