@@ -17,7 +17,7 @@ document.getElementById('convertBtn').addEventListener('click', function() {
 
   const urlRegex = /(https?:\/\/[^\s]+)/g;
   let convertedLines = [];
-  let invalidUrls = []; // 紀錄無效的網址
+  let invalidUrls = [];
 
   lines.forEach(line => {
     const urls = line.match(urlRegex);
@@ -26,8 +26,8 @@ document.getElementById('convertBtn').addEventListener('click', function() {
       urls.forEach(url => {
         const isShopee = url.includes('shopee') || url.includes('shope.ee');
         
-        // 嚴格檢查：完整的蝦皮短網址通常在 28 字元以上（例如 https://s.shopee.tw/60Qs0w6LiU 長度為 29）
-        if (isShopee && url.length < 28) {
+        // 檢查網址長度（低於 24 字元判定為無效或殘缺）
+        if (isShopee && url.length < 24) {
           invalidUrls.push(url);
         }
 
@@ -43,17 +43,15 @@ document.getElementById('convertBtn').addEventListener('click', function() {
     }
   });
 
-  // 如果發現有缺字的殘缺網址，直接中斷執行並跳出警告！
   if (invalidUrls.length > 0) {
     alert(`⚠️ 偵測到網址不完整或缺字：\n${invalidUrls.join('\n')}\n\n請確認連結複製完整再試一次！`);
-    return; // 阻斷程式，底下不生成結果
+    return;
   }
 
-  // 同步更新輸入框為前 5 行
   document.getElementById('inputText').value = lines.join('\n');
 
-  // 渲染為帶編號的超連結畫面
   const outputList = document.getElementById('outputList');
+  if (!outputList) return;
   outputList.innerHTML = '';
   
   convertedLines.forEach((line, index) => {
@@ -78,15 +76,14 @@ document.getElementById('convertBtn').addEventListener('click', function() {
   document.getElementById('resultArea').classList.remove('hidden');
 });
 
-// 清除按鈕功能
 document.getElementById('clearBtn').addEventListener('click', function() {
   document.getElementById('inputText').value = '';
-  document.getElementById('outputList').innerHTML = '';
+  const outputList = document.getElementById('outputList');
+  if (outputList) outputList.innerHTML = '';
   convertedRawText = "";
   document.getElementById('resultArea').classList.add('hidden');
 });
 
-// 一鍵複製功能
 document.getElementById('copyBtn').addEventListener('click', function() {
   if (!convertedRawText) return;
   navigator.clipboard.writeText(convertedRawText).then(() => {
