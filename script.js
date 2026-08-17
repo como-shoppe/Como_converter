@@ -17,28 +17,33 @@ document.getElementById('convertBtn').addEventListener('click', function() {
 
   const urlRegex = /(https?:\/\/[^\s]+)/g;
   let convertedLines = [];
-  let nonUrlLines = [];
+  let invalidLines = [];
 
   lines.forEach(line => {
     const urls = line.match(urlRegex);
-    if (!urls) {
-      nonUrlLines.push(line);
-    } else {
-      let convertedLine = line;
-      urls.forEach(url => {
-        const isShopee = url.includes('shopee') || url.includes('shope.ee') || url.includes('shp.ee');
-        if (isShopee) {
-          const connector = url.includes('?') ? '&' : '?';
-          const newUrl = `${url}${connector}sub_id=${MY_SUB_ID}`;
-          convertedLine = convertedLine.replace(url, newUrl);
-        }
-      });
-      convertedLines.push(convertedLine);
+    
+    // 如果整行找不到網址，或是整行不完全是網址（夾雜其他文字）
+    if (!urls || line.trim() !== urls[0].trim()) {
+      invalidLines.push(line);
+      return;
     }
+
+    const url = urls[0];
+    const isShopee = url.includes('shopee') || url.includes('shope.ee') || url.includes('shp.ee');
+
+    if (!isShopee) {
+      invalidLines.push(line);
+      return;
+    }
+
+    const connector = url.includes('?') ? '&' : '?';
+    const newUrl = `${url}${connector}sub_id=${MY_SUB_ID}`;
+    convertedLines.push(newUrl);
   });
 
-  if (nonUrlLines.length > 0) {
-    alert(`⚠️ 請確認輸入的內容是否皆為有效連結！\n以下非有效網址：\n${nonUrlLines.join('\n')}`);
+  // 只要有任何非純網址或非蝦皮連結，立刻跳出通知並阻斷
+  if (invalidLines.length > 0) {
+    alert(`⚠️ 請確認輸入的內容是否皆為有效連結！\n以下為非有效網址：\n${invalidLines.join('\n')}`);
     return;
   }
 
@@ -51,16 +56,7 @@ document.getElementById('convertBtn').addEventListener('click', function() {
   convertedLines.forEach((line, index) => {
     const p = document.createElement('p');
     p.className = 'link-item';
-    
-    const match = line.match(urlRegex);
-    if (match) {
-      let htmlContent = line;
-      match.forEach(link => {
-        htmlContent = htmlContent.replace(link, `<a href="${link}" target="_blank">${link}</a>`);
-      });
-      p.innerHTML = `${index + 1}. ${htmlContent}`;
-    }
-    
+    p.innerHTML = `${index + 1}. <a href="${line}" target="_blank">${line}</a>`;
     outputList.appendChild(p);
   });
 
@@ -75,7 +71,7 @@ document.getElementById('convertBtn').addEventListener('click', function() {
 document.getElementById('clearBtn').addEventListener('click', function() {
   document.getElementById('inputText').value = '';
   const outputList = document.getElementById('outputList');
-  if (!outputList) outputList.innerHTML = '';
+  if (outputList) outputList.innerHTML = '';
   convertedRawText = "";
   
   const resultArea = document.getElementById('resultArea');
