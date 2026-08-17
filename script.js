@@ -28,7 +28,7 @@ document.getElementById('convertBtn').addEventListener('click', function() {
     const lowerLine = trimmedLine.toLowerCase();
     const isShopee = lowerLine.includes('shopee') || lowerLine.includes('shope.ee') || lowerLine.includes('shp.ee');
 
-    // 3. 門檻設為 23 字元（tw.shp.ee/fLRrNL8c 長度為 24，低於 23 一律視為缺字擋下）
+    // 3. 門檻設為 23 字元（tw.shp.ee/fLRrNL8c 長 24 字元，低於 23 絕對是缺字）
     const minLength = lowerLine.includes('shp.ee') ? 23 : 28;
 
     if (!isUrlFormat || !isShopee || trimmedLine.length < minLength) {
@@ -36,13 +36,12 @@ document.getElementById('convertBtn').addEventListener('click', function() {
       return;
     }
 
-    // 正確的網址加上 sub_id 參數
     const connector = trimmedLine.includes('?') ? '&' : '?';
     const newUrl = `${trimmedLine}${connector}sub_id=${MY_SUB_ID}`;
     convertedLines.push(newUrl);
   });
 
-  // 只要有任何一行缺字、不符合長度或非蝦皮網址，立刻跳警告阻斷！
+  // 只要有缺字或非蝦皮網址，立刻跳警告阻斷
   if (invalidLines.length > 0) {
     alert(`⚠️ 請確認輸入的內容是否皆為有效連結！\n以下為非有效網址：\n${invalidLines.join('\n')}`);
     return;
