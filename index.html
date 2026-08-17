@@ -3,6 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- 強制瀏覽器與 CDN 不快取舊檔案 -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <title>蝦皮推廣連結轉換器</title>
   <link rel="stylesheet" href="style.css">
 </head>
@@ -29,6 +33,7 @@
 
   <div id="toast" class="toast">已複製到剪貼簿！</div>
 
-  <script src="script.js?v=200"></script>
+  <!-- 版本號設為 v=999 強制讀取最新腳本 -->
+  <script src="script.js?v=999"></script>
 </body>
 </html>
