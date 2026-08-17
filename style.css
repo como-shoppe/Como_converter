@@ -43,6 +43,15 @@ h1 {
   margin-bottom: 20px;
 }
 
+.input-label {
+  display: block;
+  text-align: left;
+  font-weight: bold;
+  font-size: 0.95rem;
+  color: #333;
+  margin-bottom: 8px;
+}
+
 textarea {
   width: 100%;
   padding: 12px;
@@ -67,6 +76,7 @@ textarea:focus {
   font-size: 1rem;
   cursor: pointer;
   transition: 0.2s;
+  margin-bottom: 10px;
 }
 
 .primary-btn {
@@ -78,8 +88,17 @@ textarea:focus {
   background-color: #d73d1f;
 }
 
+.clear-btn {
+  background-color: #e0e0e0;
+  color: #333;
+}
+
+.clear-btn:hover {
+  background-color: #d0d0d0;
+}
+
 .success-btn {
-  background-color: #27ae60;
+  background-color: #ee4d2d;
   color: white;
   margin-top: 8px;
 }
@@ -92,17 +111,6 @@ textarea:focus {
 
 .hidden {
   display: none;
-}
-
-.line-btn {
-  display: block;
-  margin-top: 20px;
-  padding: 12px;
-  background-color: #06C755;
-  color: white;
-  text-decoration: none;
-  border-radius: 8px;
-  font-weight: bold;
 }
 
 .toast {
@@ -123,4 +131,3 @@ textarea:focus {
   bottom: 30px;
   opacity: 1;
 }
-
