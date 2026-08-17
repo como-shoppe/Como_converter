@@ -15,33 +15,35 @@ document.getElementById('convertBtn').addEventListener('click', function() {
     lines = lines.slice(0, 5);
   }
 
-  const urlRegex = /(https?:\/\/[^\s]+)/g;
   let convertedLines = [];
   let invalidLines = [];
 
   lines.forEach(line => {
-    const urls = line.match(urlRegex);
+    const trimmedLine = line.trim();
     
-    // 如果整行找不到網址，或是整行不完全是網址（夾雜其他文字）
-    if (!urls || line.trim() !== urls[0].trim()) {
-      invalidLines.push(line);
+    // 1. 檢查是否為正確的 http/https 網址格式
+    const isUrlFormat = /^https?:\/\/[^\s]+$/i.test(trimmedLine);
+    
+    // 2. 檢查是否為蝦皮域名
+    const isShopee = trimmedLine.includes('shopee') || trimmedLine.includes('shope.ee') || trimmedLine.includes('shp.ee');
+
+    // 3. 精準判斷不同蝦皮短網址的最低長度限制
+    // tw.shp.ee 標準長度為 26 字元（少於 25 即為缺字）
+    // s.shopee.tw 標準長度為 29 字元（少於 28 即為缺字）
+    const minLength = trimmedLine.includes('shp.ee') ? 25 : 28;
+
+    if (!isUrlFormat || !isShopee || trimmedLine.length < minLength) {
+      invalidLines.push(trimmedLine);
       return;
     }
 
-    const url = urls[0];
-    const isShopee = url.includes('shopee') || url.includes('shope.ee') || url.includes('shp.ee');
-
-    if (!isShopee) {
-      invalidLines.push(line);
-      return;
-    }
-
-    const connector = url.includes('?') ? '&' : '?';
-    const newUrl = `${url}${connector}sub_id=${MY_SUB_ID}`;
+    // 正確的網址加上 sub_id 參數
+    const connector = trimmedLine.includes('?') ? '&' : '?';
+    const newUrl = `${trimmedLine}${connector}sub_id=${MY_SUB_ID}`;
     convertedLines.push(newUrl);
   });
 
-  // 只要有任何非純網址或非蝦皮連結，立刻跳出通知並阻斷
+  // 只要有任何一行缺字、不符合長度或非蝦皮網址，立刻跳警告阻斷！
   if (invalidLines.length > 0) {
     alert(`⚠️ 請確認輸入的內容是否皆為有效連結！\n以下為非有效網址：\n${invalidLines.join('\n')}`);
     return;
