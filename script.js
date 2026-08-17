@@ -1,36 +1,52 @@
-// 你的蝦皮推廣/分潤帳號識別參數
 const MY_SUB_ID = "judy7898376"; 
 
+// 產生推廣連結功能
 document.getElementById('convertBtn').addEventListener('click', function() {
-  const input = document.getElementById('inputText').value;
-  if (!input.trim()) {
-    alert('請貼上連結！');
+  const input = document.getElementById('inputText').value.trim();
+  if (!input) {
+    alert('請輸入蝦皮連結！');
     return;
   }
 
-  // 利用正則表達式擷取文字中的網址
+  // 以換行切割連結
+  let lines = input.split('\n').filter(line => line.trim() !== '');
+
+  // 限制一次最多 5 個連結
+  if (lines.length > 5) {
+    alert('一次最多只能貼上 5 個連結喔！已自動為您取前 5 個。');
+    lines = lines.slice(0, 5);
+  }
+
   const urlRegex = /(https?:\/\/[^\s]+)/g;
-  const urls = input.match(urlRegex);
+  let convertedLines = [];
 
-  if (!urls) {
-    alert('未偵測到有效的 URL 網址');
-    return;
-  }
-
-  let convertedText = input;
-  urls.forEach(url => {
-    let newUrl = url;
-    // 判斷是否為蝦皮商品網址並自動附加你的 Sub ID 追蹤參數
-    if (newUrl.includes('shopee.tw') || newUrl.includes('shope.ee')) {
-      const connector = newUrl.includes('?') ? '&' : '?';
-      newUrl = `${newUrl}${connector}sub_id=${MY_SUB_ID}`;
+  lines.forEach(line => {
+    const urls = line.match(urlRegex);
+    if (urls) {
+      let convertedLine = line;
+      urls.forEach(url => {
+        let newUrl = url;
+        if (newUrl.includes('shopee') || newUrl.includes('shope.ee')) {
+          const connector = newUrl.includes('?') ? '&' : '?';
+          newUrl = `${newUrl}${connector}sub_id=${MY_SUB_ID}`;
+        }
+        convertedLine = convertedLine.replace(url, newUrl);
+      });
+      convertedLines.push(convertedLine);
+    } else {
+      convertedLines.push(line);
     }
-    convertedText = convertedText.replace(url, newUrl);
   });
 
-  // 顯示轉換結果
-  document.getElementById('outputText').value = convertedText;
+  document.getElementById('outputText').value = convertedLines.join('\n');
   document.getElementById('resultArea').classList.remove('hidden');
+});
+
+// 清除按鈕功能
+document.getElementById('clearBtn').addEventListener('click', function() {
+  document.getElementById('inputText').value = '';
+  document.getElementById('outputText').value = '';
+  document.getElementById('resultArea').classList.add('hidden');
 });
 
 // 一鍵複製功能
@@ -43,4 +59,3 @@ document.getElementById('copyBtn').addEventListener('click', function() {
     setTimeout(() => toast.classList.remove('show'), 2000);
   });
 });
-
