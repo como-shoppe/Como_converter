@@ -1,6 +1,6 @@
 const MY_SUB_ID = "judy7898376"; 
 
-// 產生推廣連結
+// 產生推廣連結功能
 document.getElementById('convertBtn').addEventListener('click', function() {
   const input = document.getElementById('inputText').value.trim();
   if (!input) {
@@ -11,7 +11,7 @@ document.getElementById('convertBtn').addEventListener('click', function() {
   // 以換行切割連結
   let lines = input.split('\n').filter(line => line.trim() !== '');
 
-  // 限制最多 5 個連結
+  // 限制一次最多 5 個連結
   if (lines.length > 5) {
     alert('一次最多只能貼上 5 個連結喔！已自動為您取前 5 個。');
     lines = lines.slice(0, 5);
