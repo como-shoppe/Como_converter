@@ -8,18 +8,19 @@ document.getElementById('convertBtn').addEventListener('click', function() {
     return;
   }
 
-  // 以換行切割連結
+  // 以換行切割連結並過濾空行
   let lines = input.split('\n').filter(line => line.trim() !== '');
 
-  // 限制一次最多 5 個連結
+  // 若超過 5 行，跳出提示並強制只保留前 5 行
   if (lines.length > 5) {
-    alert('一次最多只能貼上 5 個連結喔！已自動為您取前 5 個。');
-    lines = lines.slice(0, 5);
+    alert('一次最多只能處理 5 個連結！已自動為您保留前 5 行。');
+    lines = lines.slice(0, 5); // 嚴格只留前 5 行
   }
 
   const urlRegex = /(https?:\/\/[^\s]+)/g;
   let convertedLines = [];
 
+  // 只針對過濾後的這 5 行進行轉換
   lines.forEach(line => {
     const urls = line.match(urlRegex);
     if (urls) {
@@ -38,6 +39,10 @@ document.getElementById('convertBtn').addEventListener('click', function() {
     }
   });
 
+  // 更新輸入框內容為前 5 行，讓使用者直觀看到後面的被裁掉了
+  document.getElementById('inputText').value = lines.join('\n');
+  
+  // 輸出轉換結果
   document.getElementById('outputText').value = convertedLines.join('\n');
   document.getElementById('resultArea').classList.remove('hidden');
 });
