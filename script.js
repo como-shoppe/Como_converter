@@ -21,16 +21,22 @@ document.getElementById('convertBtn').addEventListener('click', function() {
   lines.forEach(line => {
     const trimmedLine = line.trim();
     
-    // 1. 檢查是否為正確的 http/https 網址格式
+    // 1. 驗證是否為正常網址格式
     const isUrlFormat = /^https?:\/\/[^\s]+$/i.test(trimmedLine);
     
-    // 2. 檢查是否為蝦皮域名
+    // 2. 驗證是否包含蝦皮網域
     const lowerLine = trimmedLine.toLowerCase();
     const isShopee = lowerLine.includes('shopee') || lowerLine.includes('shope.ee') || lowerLine.includes('shp.ee');
 
-    // 3. 防呆門檻：tw.shp.ee/GEThpyPU 標準長度為 25 字元，少於 25 字一律判定缺字
-    const minLength = lowerLine.includes('shp.ee') ? 25 : 28;
+    // 3. 嚴格長度檢查門檻：
+    // 短網址 tw.shp.ee/GEThpyPU 標準長度為 25 字元，少於 25 字一律算缺字！
+    // 長網址 s.shopee.tw/xxx 標準長度至少 28 字元
+    let minLength = 28;
+    if (lowerLine.includes('shp.ee')) {
+      minLength = 25;
+    }
 
+    // 只要格式不對、非蝦皮、或是字數少於標準，全部抓進錯誤清單
     if (!isUrlFormat || !isShopee || trimmedLine.length < minLength) {
       invalidLines.push(trimmedLine);
       return;
@@ -41,9 +47,9 @@ document.getElementById('convertBtn').addEventListener('click', function() {
     convertedLines.push(newUrl);
   });
 
-  // 只要有任何缺字或無效網址，立刻跳警告阻斷
+  // 只要錯誤清單裡面有任何一筆（包含缺字），立刻中斷，絕對不轉出結果！
   if (invalidLines.length > 0) {
-    alert(`⚠️ 請確認輸入的內容是否皆為有效連結！\n以下為非有效網址：\n${invalidLines.join('\n')}`);
+    alert(`⚠️ 偵測到無效或缺字連結！\n以下連結長度不足或格式錯誤：\n\n${invalidLines.join('\n')}\n\n請確認連結是否複製完整。`);
     return;
   }
 
