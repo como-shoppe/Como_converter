@@ -25,12 +25,11 @@ document.getElementById('convertBtn').addEventListener('click', function() {
     const isUrlFormat = /^https?:\/\/[^\s]+$/i.test(trimmedLine);
     
     // 2. 檢查是否為蝦皮域名
-    const isShopee = trimmedLine.includes('shopee') || trimmedLine.includes('shope.ee') || trimmedLine.includes('shp.ee');
+    const lowerLine = trimmedLine.toLowerCase();
+    const isShopee = lowerLine.includes('shopee') || lowerLine.includes('shope.ee') || lowerLine.includes('shp.ee');
 
-    // 3. 精準判斷不同蝦皮短網址的最低長度限制
-    // tw.shp.ee 標準長度為 26 字元（少於 25 即為缺字）
-    // s.shopee.tw 標準長度為 29 字元（少於 28 即為缺字）
-    const minLength = trimmedLine.includes('shp.ee') ? 25 : 28;
+    // 3. 門檻設為 23 字元（tw.shp.ee/fLRrNL8c 長度為 24，低於 23 一律視為缺字擋下）
+    const minLength = lowerLine.includes('shp.ee') ? 23 : 28;
 
     if (!isUrlFormat || !isShopee || trimmedLine.length < minLength) {
       invalidLines.push(trimmedLine);
@@ -73,7 +72,7 @@ document.getElementById('convertBtn').addEventListener('click', function() {
 document.getElementById('clearBtn').addEventListener('click', function() {
   document.getElementById('inputText').value = '';
   const outputList = document.getElementById('outputList');
-  if (outputList) outputList.innerHTML = '';
+  if (!outputList) outputList.innerHTML = '';
   convertedRawText = "";
   
   const resultArea = document.getElementById('resultArea');
