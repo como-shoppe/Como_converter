@@ -10,16 +10,20 @@
   <main class="container">
     <div class="tag">Como_shoppe</div>
     <h1>蝦皮推廣連結轉換器</h1>
-    <p class="subtitle">快速轉換連結套用專屬優惠券！</p>
+    <p class="subtitle">轉換連結領取專屬優惠券</p>
 
     <div class="input-group">
-      <textarea id="inputText" rows="4" placeholder="請在此貼上蝦皮商品連結..."></textarea>
-      <button id="convertBtn" class="btn primary-btn">一鍵轉換</button>
+      <label class="input-label">蝦皮連結</label>
+      <textarea id="inputText" rows="5" placeholder="一次最多貼上 5 個蝦皮連結，每行一個"></textarea>
+      
+      <button id="convertBtn" class="btn primary-btn">產生推廣連結</button>
+      <button id="clearBtn" class="btn clear-btn">清除</button>
     </div>
 
     <div id="resultArea" class="result-group hidden">
-      <textarea id="outputText" rows="4" readonly></textarea>
-      <button id="copyBtn" class="btn success-btn">複製結果</button>
+      <label class="input-label">推廣連結</label>
+      <textarea id="outputText" rows="5" readonly></textarea>
+      <button id="copyBtn" class="btn success-btn">一鍵複製全部</button>
     </div>
   </main>
 
