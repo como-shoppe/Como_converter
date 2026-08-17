@@ -26,8 +26,12 @@ document.getElementById('convertBtn').addEventListener('click', function() {
       urls.forEach(url => {
         const isShopee = url.includes('shopee') || url.includes('shope.ee');
         
-        // 檢查網址長度（低於 24 字元判定為無效或殘缺）
-        if (isShopee && url.length < 24) {
+        // 自動判斷網址域名來設定最低長度門檻
+        // tw.shp.ee 約 26 字元 -> 設 24
+        // s.shopee.tw 約 29 字元 -> 設 28
+        const minLength = url.includes('tw.shp.ee') ? 24 : 28;
+
+        if (isShopee && url.length < minLength) {
           invalidUrls.push(url);
         }
 
@@ -73,7 +77,11 @@ document.getElementById('convertBtn').addEventListener('click', function() {
   });
 
   convertedRawText = convertedLines.join('\n');
-  document.getElementById('resultArea').classList.remove('hidden');
+  
+  const resultArea = document.getElementById('resultArea');
+  if (resultArea) {
+    resultArea.classList.remove('hidden');
+  }
 });
 
 document.getElementById('clearBtn').addEventListener('click', function() {
@@ -81,14 +89,20 @@ document.getElementById('clearBtn').addEventListener('click', function() {
   const outputList = document.getElementById('outputList');
   if (outputList) outputList.innerHTML = '';
   convertedRawText = "";
-  document.getElementById('resultArea').classList.add('hidden');
+  
+  const resultArea = document.getElementById('resultArea');
+  if (resultArea) {
+    resultArea.classList.add('hidden');
+  }
 });
 
 document.getElementById('copyBtn').addEventListener('click', function() {
   if (!convertedRawText) return;
   navigator.clipboard.writeText(convertedRawText).then(() => {
     const toast = document.getElementById('toast');
-    toast.classList.add('show');
-    setTimeout(() => toast.classList.remove('show'), 2000);
+    if (toast) {
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2000);
+    }
   });
 });
