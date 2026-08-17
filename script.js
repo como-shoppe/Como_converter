@@ -1,22 +1,25 @@
 const MY_SUB_ID = "judy7898376"; 
 let convertedRawText = ""; 
 
-// 檢查 8-9 碼短網址是否能在網路線上連通（抓出少一字但長度剛好 8-9 碼的無效連結）
+// 利用免費的 CORS Proxy 獲取真實 HTTP 狀態碼 (能精準判定 404 壞連結)
 async function validateUrlExist(url) {
   try {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 2500); // 2.5秒超時保護
+    const timeout = setTimeout(() => controller.abort(), 4000); // 4秒超時保護
 
-    await fetch(url, { 
-      method: 'HEAD', 
-      mode: 'no-cors',
+    // 使用 corsproxy.io 解析真實的 HTTP 回傳狀態
+    const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`;
+    const response = await fetch(proxyUrl, { 
+      method: 'GET',
       signal: controller.signal 
     });
     
     clearTimeout(timeout);
-    return true; 
+
+    // 蝦皮壞連結或少一字的網址會回傳 404 或導向失敗，只要 response.ok 不是 true 就判定為壞連結
+    return response.ok; 
   } catch (e) {
-    return false; // 網址無法解析或連線失敗，判斷為壞連結
+    return false; // 連線失敗或超時，直接判定為無效連結
   }
 }
 
@@ -28,9 +31,8 @@ document.getElementById('convertBtn').addEventListener('click', async function()
   let lines = input.split('\n').map(line => line.trim()).filter(line => line !== '').slice(0, 5);
   let convertedLines = [], invalidLines = [];
 
-  // 改變按鈕 UI 狀態
   convertBtn.disabled = true;
-  convertBtn.innerText = "正在進行 9 碼以下偵錯與轉換...";
+  convertBtn.innerText = "驗證連結真實性中...";
 
   for (let str of lines) {
     const isUrl = /^https?:\/\/[^\s]+$/i.test(str);
@@ -41,26 +43,20 @@ document.getElementById('convertBtn').addEventListener('click', async function()
       continue;
     }
 
-    let isValid = false;
-    let isNeedDeepCheck = false; // 是否需要進行深度連線偵錯 (8-9碼)
+    let isValidSyntax = false;
+    let isShortUrl = false;
 
     if (/s\.shopee\.tw/i.test(str)) {
-      // 擷取斜線後的 Hash 碼
       const match = str.match(/s\.shopee\.tw\/([a-zA-Z0-9]+)/);
       const code = match ? match[1] : "";
 
       if (code.length < 8) {
-        // 小於 8 碼（包含 7 碼）一律判定缺字！
-        invalidLines.push({ url: str, reason: "字數少於 8 碼 (嚴重複製不完整)" });
+        invalidLines.push({ url: str, reason: "長度少於 8 碼 (嚴重缺字)" });
         continue;
-      } else if (code.length <= 9) {
-        // 8 碼與 9 碼列為重點偵錯目標，標記為需要深度驗證
-        isValid = true;
-        isNeedDeepCheck = true;
-      } else {
-        // 10 碼（含）以上直接通過基本驗證
-        isValid = true;
       }
+      
+      isValidSyntax = true;
+      isShortUrl = true; // 標記為短網址，全部送往真實性驗證
 
     } else if (/tw\.shp\.ee/i.test(str)) {
       const match = str.match(/tw\.shp\.ee\/([a-zA-Z0-9]+)/);
@@ -70,43 +66,42 @@ document.getElementById('convertBtn').addEventListener('click', async function()
         invalidLines.push({ url: str, reason: "tw.shp.ee 字數少於 8 碼" });
         continue;
       }
-      isValid = true;
-      if (code.length <= 9) isNeedDeepCheck = true;
+      isValidSyntax = true;
+      isShortUrl = true;
 
     } else if (/shope\.ee/i.test(str)) {
-      isValid = /^https?:\/\/shope\.ee\/[a-zA-Z0-9]{7,}(\?.*)?$/i.test(str);
+      isValidSyntax = /^https?:\/\/shope\.ee\/[a-zA-Z0-9]{7,}(\?.*)?$/i.test(str);
+      isShortUrl = true;
     } else {
-      isValid = str.length >= 25;
+      isValidSyntax = str.length >= 25;
     }
 
-    // 進行 8-9 碼高風險區間的線上連線測試
-    if (isValid && isNeedDeepCheck) {
-      const isReachable = await validateUrlExist(str);
-      if (!isReachable) {
-        invalidLines.push({ url: str, reason: "9碼(含)以下連結連線失敗，疑為缺字壞連結" });
+    // 進行強效線上驗證：只要是短網址，就去確認蝦皮伺服器是不是真的有這個頁面
+    if (isValidSyntax && isShortUrl) {
+      const isRealAndActive = await validateUrlExist(str);
+      if (!isRealAndActive) {
+        invalidLines.push({ url: str, reason: "網址無效/缺字 (蝦皮伺服器回傳 404 頁面不存在)" });
         continue;
       }
     }
 
-    // 通過驗證，安全導出帶有 sub_id 的連結
-    if (isValid) {
+    // 通過驗證，加上 sub_id
+    if (isValidSyntax) {
       try {
         const urlObj = new URL(str);
         urlObj.searchParams.set('sub_id', MY_SUB_ID);
         convertedLines.push(urlObj.toString());
       } catch (e) {
-        invalidLines.push({ url: str, reason: "URL 解析異常" });
+        invalidLines.push({ url: str, reason: "網址解析失敗" });
       }
     } else {
       invalidLines.push({ url: str, reason: "格式不合規" });
     }
   }
 
-  // 還原按鈕 UI 狀態
   convertBtn.disabled = false;
   convertBtn.innerText = "開始轉換";
 
-  // 偵錯與錯誤提示
   if (invalidLines.length > 0) {
     const errorDetails = invalidLines.map(item => `❌ ${item.url}\n   └ 原因: ${item.reason}`).join('\n\n');
     return alert(`⚠️ 偵測到無效或缺字連結！\n\n${errorDetails}`);
